@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "@prisma/client": "^4.7.1",
+    "body-parser": "^1.20.1",
+    "cheerio": "^1.0.0-rc.12",
+    "cookie-parser": "^1.4.6",
+    "crawler": "^1.3.0",
+    "dayjs": "^1.11.7",
+    "express": "^4.18.2",
+    "moment": "^2.29.4",
+    "multer": "^1.4.5-lts.1",
+    "mysql": "^2.18.1",
+    "node-fetch": "^3.3.0"
+  },
+  "name": "hello-node",
+  "version": "1.0.0",
+  "description": "Node.js学习",
+  "main": "server.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "prisma": "^4.7.1"
+  }
+}

@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model movie {
+  id          Int      @id @default(autoincrement())
+  db_id       String?  @db.VarChar(255)
+  name        String?  @db.VarChar(255)
+  img_id      String?  @db.VarChar(255)
+  img_url     String?  @db.VarChar(255)
+  online_date DateTime @db.Date
+  online_type String?  @db.VarChar(255)
+  imdb_id     String?  @db.VarChar(255)
+}
+
+model subscribe {
+  id                 Int       @id @default(autoincrement())
+  movie_id           Int?
+  user_id            Int?
+  notice_time        DateTime? @default(now()) @db.DateTime(0)
+  deleted            Boolean?
+  custom_notice_time DateTime? @default(now()) @db.DateTime(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model user {
+  id      Int      @id @default(autoincrement())
+  name    String?  @db.VarChar(24)
+  tel     String?  @db.VarChar(11)
+  deleted Boolean?
+
+  @@ignore
+}
