@@ -16,6 +16,7 @@ model movie {
   online_date DateTime @db.Date
   online_type String?  @db.VarChar(255)
   imdb_id     String?  @db.VarChar(255)
+  db_href     String?  @db.VarChar(255)
 }
 
 model subscribe {

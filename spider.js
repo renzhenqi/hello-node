@@ -1,8 +1,8 @@
 import * as cheerio from 'cheerio';
 import fetch from 'node-fetch';
-import dayjs from 'dayjs'
-import {DATETIME, DATETIME2} from "mysql/lib/protocol/constants/types.js";
-import moment from "moment";
+import {Prisma, PrismaClient} from '@prisma/client';
+
+const prisma = new PrismaClient({log: ['query']});
 
 async function request(url, options = {}) {
   try {
@@ -25,58 +25,47 @@ function strHandle(str) {
 
 const searchHtml = await request('https://movie.douban.com/cinema/later/chengdu/');
 
-let infos = []
-const arr = searchHtml.data('#showing-soon .item .intro').each( async (i, el) => {
+let movies = []
+const arr = searchHtml.data('#showing-soon .item .intro').each(async (i, el) => {
   let result = {}
   result['name'] = strHandle(searchHtml.data(el).find('a').text())
   const href = strHandle(searchHtml.data(el).find('h3 a').attr('href'))
-  result['href'] = href
+  result['db_href'] = href
   const hrefStr = href.split('/')
   result['db_id'] = hrefStr[4]
   const onlineDate = strHandle(searchHtml.data(el).find('ul li').first().text())
-  result['onlineDate'] = onlineDate
+  result['online_date'] = onlineDate
 
-  infos.push(result)
+  movies.push(result)
 })
 
+for (let info of movies) {
+  //获取详情
+  const response = await fetch('https://movie.douban.com/j/subject_abstract?subject_id=' + info.db_id)
+  const body = await response.json();
+  const releaseYear = body.subject.release_year;
+  const dateStr = `${releaseYear}年${info['online_date']}`
+  const onlineDate = new Date(Date.parse(dateStr.replace('年', '-').replace('月', '-').replace('日', '')));
+  info['online_date'] = onlineDate
+}
+console.log(movies)
 
-// infos.forEach(async info => {
-//   //获取详情
-//   // const response = await fetch('https://movie.douban.com/j/subject_abstract?subject_id=4811774')
-//   const response = await fetch('https://movie.douban.com/j/subject_abstract?subject_id=' + info.db_id)
-//   const body = await response.json();
-//   // console.log(body)
-//   const releaseYear = body.subject.release_year;
-//
-//   console.log('===============================')
-//   const date = new Date();
-//   date.setFullYear(releaseYear)
-//   console.log(info.onlineDate)
-//   date.setMonth(11)
-//   date.setDate(16)
-//   const s = dayjs(date).format('YYYY-MM-DD');
-//   info.onlineDate = s
-//   console.log(info)
-// })
+async function batchInsert() {
+  await Promise.all(
+    movies.map(async (movie) => {
+      await prisma.movie.create({
+        data: movie,
+      })
+    })
+  )
+}
 
-const dealOnlineDate = new Promise( (resolve, reject) => {
-  infos.forEach(async info => {
-    //获取详情
-    // const response = await fetch('https://movie.douban.com/j/subject_abstract?subject_id=4811774')
-    const response = await fetch('https://movie.douban.com/j/subject_abstract?subject_id=' + info.db_id)
-    const body = await response.json();
-    // console.log(body)
-    const releaseYear = body.subject.release_year;
-
-    console.log('===============================')
-    // const date = new Date();
-    // date.setFullYear(releaseYear)
-    // console.log(info.onlineDate)
-    // date.setMonth(11)
-    // date.setDate(16)
-    const date = new Date('2022-12-15');
-    console.log(date)
-    info['onlineDate'] = date
-    console.log(info)
+batchInsert()
+  .then(async () => {
+    await prisma.$disconnect()
   })
-}).then(console.log(infos));
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect()
+    process.exit(1)
+  })
