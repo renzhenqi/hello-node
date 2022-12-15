@@ -50,15 +50,15 @@ for (let info of movies) {
 }
 console.log(movies)
 
-async function batchInsert() {
-  await Promise.all(
-    movies.map(async (movie) => {
-      await prisma.movie.create({
-        data: movie,
-      })
-    })
-  )
-}
+// async function batchInsert() {
+//   await Promise.all(
+//     movies.map(async (movie) => {
+//       await prisma.movie.create({
+//         data: movie,
+//       })
+//     })
+//   )
+// }
 
 batchInsert()
   .then(async () => {
