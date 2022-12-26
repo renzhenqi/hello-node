@@ -8,32 +8,43 @@ datasource db {
 }
 
 model movie {
-  id          Int      @id @default(autoincrement())
-  db_id       String?  @db.VarChar(255)
-  name        String?  @db.VarChar(255)
-  img_id      String?  @db.VarChar(255)
-  img_url     String?  @db.VarChar(255)
-  online_date DateTime @db.Date
-  online_type String?  @db.VarChar(255)
-  imdb_id     String?  @db.VarChar(255)
-  db_href     String?  @db.VarChar(255)
+  id          Int         @id @default(autoincrement())
+  db_id       String?     @unique(map: "movie_pk") @db.VarChar(255)
+  name        String?     @db.VarChar(255)
+  img_id      String?     @db.VarChar(255)
+  img_url     String?     @db.VarChar(255)
+  online_date DateTime    @db.Date
+  online_type String?     @db.VarChar(255)
+  imdb_id     String?     @db.VarChar(255)
+  db_href     String?     @db.VarChar(255)
+  users   subscribe[]
 }
 
 model subscribe {
   id                 Int       @id @default(autoincrement())
-  movie_id           Int?
-  user_id            Int?
+  movie              movie     @relation(fields: [movie_id], references: [id])
+  movie_id           Int
+  user               user     @relation(fields: [user_id], references: [id])
+  user_id            Int
   notice_time        DateTime? @default(now()) @db.DateTime(0)
   deleted            Boolean?
   custom_notice_time DateTime? @default(now()) @db.DateTime(0)
+  openid             String    @db.VarChar(255)
+
+  @@index([id], map: "subscribe_id_index")
+  @@index([openid], map: "subscribe_openid_index")
+  @@index([user_id], map: "subscribe_user_id_fk")
+  @@index([movie_id], map: "subscribe_user_movie_id_fk")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model user {
-  id      Int      @id @default(autoincrement())
-  name    String?  @db.VarChar(24)
-  tel     String?  @db.VarChar(11)
-  deleted Boolean?
+  id        Int         @id @default(autoincrement())
+  name      String?     @db.VarChar(24)
+  tel       String?     @db.VarChar(11)
+  deleted   Boolean?
+  openid    String      @unique(map: "user_pk") @db.VarChar(255)
 
-  @@ignore
+  @@index([id], map: "user_id_index")
+  @@index([openid], map: "user_openid_index")
+  movies subscribe[]
 }

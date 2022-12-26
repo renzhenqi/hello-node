@@ -1,19 +1,32 @@
-let server = require("./serverV2");
-let router = require("./router");
-console.log(__filename);
-console.log(__dirname)
-let timeout = setTimeout(function () {
-  console.log("hello setTimeOut");
-}, 2000);
-let timeout2 = setTimeout(function () {
-  console.log("hello setTimeOut2");
-}, 3000);
-clearTimeout(timeout);
+import express from 'express';
+import {PrismaClient} from "@prisma/client";
+import bodyParser from "body-parser";
+import moment from "moment/moment.js";
 
-function printHello(){
-  console.log( "Hello, World!");
+//创建 application/x-www-form-urlencoded 编码解析
+const urlencodedParser = bodyParser.urlencoded({extended: false})
+
+const prisma = new PrismaClient({log: ['query']});
+
+
+const app = express();
+
+app.use('/imgs', express.static('imgs'))
+
+
+app.post('/index-table', urlencodedParser, async function (req, res) {
+  const pageSize = req.body.pageSize;
+  const pageNum = req.body.pageNum;
+  const movies = await findMovieList()
+  res.writeHead(200, {"Content-Type": "application/json; charset=utf-8"})
+  res.end(JSON.stringify(movies), 'utf-8');
+});
+
+async function findMovieList() {
+  const movies = await prisma.movie.findMany();
+  // console.log(movies)
+  movies.forEach(movie => movie['online_date'] = moment(movie.online_date).format('YYYY-MM-DD'))
+  return movies;
 }
-// 两秒后执行以上函数
-setInterval(printHello, 2000);
 
-server.start(router.route);
+app.listen(8081)
