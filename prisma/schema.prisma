@@ -1,5 +1,9 @@
 generator client {
   provider = "prisma-client-js"
+  //开启update数据不需要根据数据的唯一标识更新
+  //todo 存疑 目前参照官方文档 此方式仍需根据唯一标识字段进行update
+  //参考 https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#enable-the-ability-to-filter-on-non-unique-fields-with-userwhereuniqueinput
+  previewFeatures = ["extendedWhereUnique"]
 }
 
 datasource db {

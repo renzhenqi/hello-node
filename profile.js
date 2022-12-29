@@ -17,7 +17,8 @@ app.get('/profile', async function (req, res) {
         some: {
           user: {
             id: user.id
-          }
+          },
+          deleted: false
         }
       }
     }
